@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent {
+      docker { image 'oven/bun:1.2-alpine' }
+    }
 
     environment {
       IMAGE_NAME = 'peerawitp/jenkins-lab'
@@ -7,6 +9,14 @@ pipeline {
     }
 
     stages {
+      stage('Run tests') {
+        steps {
+          script {
+            sh 'bun test'
+          }
+        }
+      }
+
       stage('Build and push docker image') {
         steps {
           script {
