@@ -3,15 +3,15 @@ pipeline {
 
     environment {
       IMAGE_NAME = 'peerawitp/jenkins-lab'
+      DOCKERFILE = './docker/Dockerfile'
     }
 
     stages {
-      def dockerfile = './docker/Dockerfile'
       stage('Build and push docker image') {
         steps {
           script {
               docker.withRegistry('https://hub.docker.com', 'docker-hub-peerawitp') {
-                def dockerImage = docker.build("${IMAGE_NAME}:${env.BUILD_ID}", "-f ${dockerfile}")
+                def dockerImage = docker.build("${IMAGE_NAME}:${env.BUILD_ID}", "-f ${DOCKERFILE}")
                 dockerImage.push()
                 dockerImage.push('latest')
               }
