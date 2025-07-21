@@ -10,8 +10,8 @@ pipeline {
       stage('Build and push docker image') {
         steps {
           script {
+              def dockerImage = docker.build("${IMAGE_NAME}:${env.BUILD_ID}", "-f ${DOCKERFILE} .")
               docker.withRegistry('https://docker.io', 'docker-hub-peerawitp') {
-                def dockerImage = docker.build("${IMAGE_NAME}:${env.BUILD_ID}", "-f ${DOCKERFILE} .")
                 dockerImage.push()
                 dockerImage.push('latest')
               }
