@@ -1,21 +1,25 @@
 pipeline {
-    agent any
+    agent {
+      docker {
+          image 'oven/bun:1.2'
+      }
+    }
 
     stages {
-        stage('Build') {
-            steps {
-                bun install
-            }
-        }
-        stage('Test') {
-            steps {
-                bun test
-            }
-        }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying....'
-            }
-        }
+      stage('Build') {
+          steps {
+              bun install
+          }
+      }
+      stage('Test') {
+          steps {
+              bun test
+          }
+      }
+      stage('Deploy') {
+          steps {
+              echo 'Deploying....'
+          }
+      }
     }
 }
