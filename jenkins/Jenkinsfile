@@ -11,7 +11,7 @@ pipeline {
         steps {
           script {
               docker.withRegistry('https://docker.io', 'docker-hub-peerawitp') {
-                def dockerImage = docker.build("${IMAGE_NAME}:${env.BUILD_ID}", "-f ${DOCKERFILE}")
+                def dockerImage = docker.build("${IMAGE_NAME}:${env.BUILD_ID}", "-f ${DOCKERFILE} .")
                 dockerImage.push()
                 dockerImage.push('latest')
               }
