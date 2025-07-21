@@ -6,20 +6,28 @@ pipeline {
     }
 
     stages {
+      stage('Check building environment') {
+        steps {
+          sh 'ls -lah'
+          sh 'echo $PWD'
+          sh 'env'
+        }
+      }
+
       stage('Build') {
-          steps {
-              bun install
-          }
+        steps {
+          sh 'bun install'
+        }
       }
       stage('Test') {
-          steps {
-              bun test
-          }
+        steps {
+          sh 'bun test'
+        }
       }
       stage('Deploy') {
-          steps {
-              echo 'Deploying....'
-          }
+        steps {
+          echo 'Deploying....'
+        }
       }
     }
 }
