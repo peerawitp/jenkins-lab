@@ -1,10 +1,23 @@
-FROM oven/bun:1.2-alpine
+FROM oven/bun:1.2-alpine as builder
 
 WORKDIR /app
 
 COPY package.json .
 COPY bun.lock .
 
+RUN bun install
+
+COPY src src
+COPY tsconfig.json .
+
+RUN bun test
+
+FROM oven/bun:1.2-alpine
+
+WORKDIR /app
+
+COPY package.json .
+COPY bun.lock .
 RUN bun install --production
 
 COPY src src
