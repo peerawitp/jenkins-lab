@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+
+    environment {
+        ENVIRONMENT_NAME = 'sit'
+        IMAGE_NAME = 'peerawitp/jenkins-lab'
+        DOCKERFILE = './docker/Dockerfile'
+        SONARQUBE_URL = 'http://localhost:10010'
+        SONARQUBE_TOKEN = credentials('sit-sonarqube-token')
+    }
+
+    stages {
+        stage('Prepare Git Repository') {
+            steps {
+                cleanWs()
+
+                dir('code-resource'){
+                    url: 'https://github.com/peerawitp/jenkins-lab.git',
+                    branch: 'sit'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                sh """
+                    docker run \
+                        --rm \
+                        -e SONAR_HOST_URL="${SONARQUBE_URL}"  \
+                        -e SONAR_TOKEN="${SONARQUBE_TOKEN}" \
+                        -v "./code-resource:/usr/src" \
+                        sonarsource/sonar-scanner-cli
+                """
+            }
+        }
+
+        stage('Build and push docker image') {
+            steps {
+                script {
+                docker.withRegistry('', 'docker-hub-peerawitp') {
+                        def dockerImage = docker.build("${IMAGE_NAME}:${ENVIRONMENT_NAME}", "-f ${DOCKERFILE} .").push()
+                    }
+                }
+            }
+        }
+    }
+}
