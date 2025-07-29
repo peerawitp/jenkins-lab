@@ -5,8 +5,8 @@ pipeline {
         ENVIRONMENT_NAME = 'sit'
         IMAGE_NAME = 'peerawitp/jenkins-lab'
         DOCKERFILE = './docker/Dockerfile'
-        SONARQUBE_URL = 'http://localhost:10010'
-        SONARQUBE_TOKEN = credentials('sit-sonarqube-token')
+        SONARQUBE_TOOL_NAME = 'sq1'
+        SONARQUBE_PROJECT_KEY = 'jenkins-lab-sit'
     }
 
     stages {
@@ -14,8 +14,8 @@ pipeline {
             steps {
                 cleanWs()
 
-                dir('code-resource'){
-                    url: 'https://github.com/peerawitp/jenkins-lab.git',
+                dir('code-resource') {
+                    git url: 'https://github.com/peerawitp/jenkins-lab',
                     branch: 'sit'
                 }
             }
@@ -23,22 +23,26 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                sh """
-                    docker run \
-                        --rm \
-                        -e SONAR_HOST_URL="${SONARQUBE_URL}"  \
-                        -e SONAR_TOKEN="${SONARQUBE_TOKEN}" \
-                        -v "./code-resource:/usr/src" \
-                        sonarsource/sonar-scanner-cli
-                """
+                dir('code-resource') {
+                    script {
+                        def scannerHome = tool "${SONARQUBE_TOOL_NAME}"
+                        withSonarQubeEnv() {
+                            sh """
+                                ${scannerHome}/bin/sonar-scanner \
+                                    -Dsonar.projectKey=${SONARQUBE_PROJECT_KEY} \
+                                    -Dsonar.sources=.
+                            """
+                        }
+                    }
+                }
             }
         }
 
         stage('Build and push docker image') {
             steps {
                 script {
-                docker.withRegistry('', 'docker-hub-peerawitp') {
-                        def dockerImage = docker.build("${IMAGE_NAME}:${ENVIRONMENT_NAME}", "-f ${DOCKERFILE} .").push()
+                    docker.withRegistry('', 'docker-hub-peerawitp') {
+                        def dockerImage = docker.build("${IMAGE_NAME}:${ENVIRONMENT_NAME}", "-f ./code-resource/${DOCKERFILE} ./code-resource").push()
                     }
                 }
             }
