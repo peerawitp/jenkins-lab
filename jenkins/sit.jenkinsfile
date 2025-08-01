@@ -7,6 +7,9 @@ pipeline {
         DOCKERFILE = './docker/Dockerfile'
         SONARQUBE_TOOL_NAME = 'sq1'
         SONARQUBE_PROJECT_KEY = 'jenkins-lab-sit'
+        DEFECTDOJO_URL = 'http://nginx:8080'
+        DEFECTDOJO_API_KEY = credentials('sit-defectdojo-token')
+        DEFECTDOJO_ENGAGEMENT_ID = '1'
     }
 
     stages {
@@ -38,11 +41,53 @@ pipeline {
             }
         }
 
-        stage('Build and push docker image') {
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${IMAGE_NAME}:${ENVIRONMENT_NAME}", "-f ./code-resource/${DOCKERFILE} ./code-resource")
+                }
+            }
+        }
+
+        stage('Trivy Scan') {
+            steps {
+                script {
+                    def outputDir = "${WORKSPACE}/reports"
+                    def outputFile = "trivy-report-${ENVIRONMENT_NAME}.json"
+                    sh """
+                        docker run \
+                            -v /var/run/docker.sock:/var/run/docker.sock \
+                            -v ${outputDir}:/output \
+                            aquasec/trivy image --format json -o /output/${outputFile} ${IMAGE_NAME}:${ENVIRONMENT_NAME}
+                    """
+
+                    sh "cat $outputDir/$outputFile"
+                }
+            }
+        }
+
+        stage('Publish Report to DefectDojo') {
+            steps {
+                script {
+                    sh """
+                        echo "Uploading Trivy report to DefectDojo..."
+                        curl -X POST "$DEFECTDOJO_URL/api/v2/import-scan/" \
+                            -H "Authorization: Token $DEFECTDOJO_API_KEY" \
+                            -F "engagement=$DEFECTDOJO_ENGAGEMENT_ID" \
+                            -F "scan_type=Trivy Scan" \
+                            -F "file=@${WORKSPACE}/reports/trivy-report-${ENVIRONMENT_NAME}.json" \
+                            -F "active=true" -F "verified=false"
+                    """
+                }
+            }
+        }
+
+        stage('Push Docker Image to Registry') {
             steps {
                 script {
                     docker.withRegistry('', 'docker-hub-peerawitp') {
-                        def dockerImage = docker.build("${IMAGE_NAME}:${ENVIRONMENT_NAME}", "-f ./code-resource/${DOCKERFILE} ./code-resource").push()
+                        def dockerImage = docker.image("${IMAGE_NAME}:${ENVIRONMENT_NAME}")
+                        dockerImage.push()
                     }
                 }
             }
