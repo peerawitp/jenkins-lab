@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package.json .
 COPY bun.lock .
-RUN bun install --production
+RUN bun install --trust-scripts
 
 COPY src src
 COPY tsconfig.json .

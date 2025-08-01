@@ -6,10 +6,34 @@
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
-    "elysia": "latest"
+    "elysia": "latest",
+    "lodash": "4.17.20",
+    "express": "4.16.0",
+    "axios": "0.18.0",
+    "moment": "2.24.0",
+    "jsonwebtoken": "8.5.0",
+    "bcrypt": "3.0.0",
+    "handlebars": "4.0.11",
+    "ejs": "2.6.1",
+    "mysql": "2.17.1",
+    "sqlite3": "4.0.6",
+    "mongoose": "5.5.0",
+    "xml2js": "0.4.19",
+    "request": "2.88.0",
+    "validator": "10.11.0",
+    "minimist": "1.2.0",
+    "yargs-parser": "13.1.0",
+    "tar": "4.4.8",
+    "serialize-javascript": "1.7.0",
+    "node-forge": "0.8.2"
   },
   "devDependencies": {
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "webpack": "4.28.0",
+    "webpack-dev-server": "3.1.14",
+    "nodemon": "1.18.0",
+    "jest": "23.6.0",
+    "eslint": "5.16.0"
   },
   "module": "src/index.js"
 }
