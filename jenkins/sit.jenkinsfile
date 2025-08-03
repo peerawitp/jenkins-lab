@@ -3,10 +3,17 @@ pipeline {
 
     environment {
         ENVIRONMENT_NAME = 'sit'
+
+        // Docker configuration
+        DOCKER_UNIT_TEST_IMAGE = 'oven/bun:1.2-alpine'
         IMAGE_NAME = 'peerawitp/jenkins-lab'
         DOCKERFILE = './docker/Dockerfile'
+
+        // SonarQube configuration
         SONARQUBE_TOOL_NAME = 'sq1'
         SONARQUBE_PROJECT_KEY = 'jenkins-lab-sit'
+
+        // DefectDojo configuration
         DEFECTDOJO_URL = 'http://nginx:8080'
         DEFECTDOJO_API_KEY = credentials('sit-defectdojo-token')
         DEFECTDOJO_ENGAGEMENT_ID = '1'
@@ -37,6 +44,20 @@ pipeline {
                             """
                         }
                     }
+                }
+            }
+        }
+
+        stage('Unit Test') {
+            steps {
+                script {
+                    sh """
+                        docker run --rm \
+                            -v ${WORKSPACE}/code-resource:/app \
+                            -w /app \
+                            ${DOCKER_UNIT_TEST_IMAGE} \
+                            sh -c "bun install && bun test"
+                    """
                 }
             }
         }
