@@ -1,15 +1,14 @@
-FROM oven/bun:1.2-alpine
+FROM amazoncorretto:22-alpine
 
 WORKDIR /app
 
-COPY package.json .
-COPY bun.lock .
-RUN bun install --production
-
+COPY pom.xml .
+COPY mvnw .
+COPY .mvn .mvn
 COPY src src
-COPY tsconfig.json .
 
-ENV NODE_ENV production
-CMD ["bun", "src/index.ts"]
+RUN ./mvnw package -DskipTests
 
 EXPOSE 3000
+
+CMD ["java", "-jar", "target/jenkinslab-0.0.1-SNAPSHOT.jar"]
