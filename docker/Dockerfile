@@ -1,12 +1,12 @@
 # Build Stage
-FROM maven:3.9.9-amazoncorretto-21 AS build
+FROM maven:3.9.11-amazoncorretto-21 AS build
 WORKDIR /app
 COPY pom.xml .
 COPY src src
 RUN mvn clean install
 
 # Runtime Stage
-FROM openjdk:21-jdk-bookworm
+FROM openjdk:26-oraclelinux9
 USER 1000
 VOLUME /tmp
 EXPOSE 8080
